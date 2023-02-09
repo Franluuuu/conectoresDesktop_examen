@@ -109,7 +109,6 @@ public class MainJFrame extends javax.swing.JFrame {
 
                 try {
 
-                    DB.registerDriver();
                     conn = DB.getConnection();
                     stmt = conn.createStatement();
 
@@ -133,8 +132,8 @@ public class MainJFrame extends javax.swing.JFrame {
                     }
 
 //                    Thread.sleep(3000);
-                } catch (ClassNotFoundException | SQLException | InterruptedException ex) {
-                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SQLException | InterruptedException ex) {
+                    jTA.insert(pre + "ERROR: " + ex.getMessage() + "\n", 0);                    
                 } finally {
                     DB.closeResultSet(rs);
                     DB.closeStatement(stmt);
@@ -188,7 +187,7 @@ public class MainJFrame extends javax.swing.JFrame {
 
     private Gson getGson() {
         return new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
                 // .setPrettyPrinting()
                 .create();
     }

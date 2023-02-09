@@ -5,11 +5,10 @@
 package es.eldelbit.conectoresdesktop.db;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
  *
@@ -17,13 +16,13 @@ import java.util.Properties;
  */
 public class DB {
 
-    public static void registerDriver() throws ClassNotFoundException {
+    // BasicDataSource
+    final private static BasicDataSource dataSource = new BasicDataSource();
 
-        Class.forName("com.mysql.cj.jdbc.Driver");
-
-    }
-
-    public static Connection getConnection() throws SQLException {
+    // PoolingDataSource
+    // private static DataSource dataSource = null;
+    // Init
+    static {
 
         String protocol = "jdbc:mysql://";
         String hosts = "127.0.0.1";
@@ -32,20 +31,51 @@ public class DB {
 
         String url = protocol + hosts + ":" + port + "/" + database;
 
+        String username = "acceso_a_datos";
+        String password = "Changeme_23";
+
+        int minIdle = 3;
+        int maxIdle = 6;
+        int maxTotal = 10;
+
+        // BasicDataSource
+        dataSource.setUrl(url + "?allowMultiQueries=true&useSSL=false&zeroDateTimeBehavior=convertToNull");
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setInitialSize(minIdle);
+        dataSource.setMinIdle(minIdle);
+        dataSource.setMaxIdle(maxIdle);
+        dataSource.setMaxTotal(maxTotal);
+
+        // PoolingDataSource
+        /*
         Properties properties = new Properties();
+        properties.setProperty("user", username);
+        properties.setProperty("password", password);
 
-        properties.put("user", "root"); // usuario
-        properties.put("password", "changeme"); // contraseña
+        properties.setProperty("useSSL", "false");
 
-        properties.put("useUnicode", "true");
-        properties.put("characterEncoding", "UTF-8");
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, properties);
 
-        // properties.put("serverTimezone", "UTC");
-        properties.put("useSSL", "false");
-        properties.put("allowPublicKeyRetrieval", "true");
+        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
 
-        // String properties = "?zeroDateTimeBehavior=convertToNull&useGmtMillisForDatetimes=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false";
-        return DriverManager.getConnection(url, properties);
+        GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
+        config.setMinIdle(minIdle);
+        config.setMaxIdle(maxIdle);
+        config.setMaxTotal(maxTotal);
+                
+        ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory, config);
+        poolableConnectionFactory.setPool(connectionPool);
+
+        dataSource = new PoolingDataSource<>(connectionPool);
+         */
+    }
+
+    public static Connection getConnection() throws SQLException {
+
+        return dataSource.getConnection();
 
     }
 
@@ -82,6 +112,17 @@ public class DB {
 
     }
 
+    public static void rollback(Connection conn) {
+
+        if (conn != null) {
+            try {
+                conn.rollback();
+            } catch (SQLException sqlEx) {
+            }
+        }
+
+    }
+
     public static Integer getInt(ResultSet rs, String field) throws SQLException {
 
         Integer value = rs.getInt(field);
@@ -92,7 +133,7 @@ public class DB {
 
     }
     
-     public static Long getLong(ResultSet rs, String field) throws SQLException {
+    public static Long getLong(ResultSet rs, String field) throws SQLException {
 
         Long value = rs.getLong(field);
         if (rs.wasNull()) {
