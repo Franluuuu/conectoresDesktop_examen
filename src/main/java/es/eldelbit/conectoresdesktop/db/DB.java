@@ -4,11 +4,11 @@
  */
 package es.eldelbit.conectoresdesktop.db;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import org.apache.commons.dbcp2.BasicDataSource;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 
 /**
  *
@@ -16,130 +16,30 @@ import org.apache.commons.dbcp2.BasicDataSource;
  */
 public class DB {
 
-    // BasicDataSource
-    final private static BasicDataSource dataSource = new BasicDataSource();
+    private static SessionFactory sf;
 
-    // PoolingDataSource
-    // private static DataSource dataSource = null;
-    // Init
     static {
 
-        String protocol = "jdbc:mysql://";
-        String hosts = "127.0.0.1";
-        String port = "3306";
-        String database = "restful";
-
-        String url = protocol + hosts + ":" + port + "/" + database;
-
-        String username = "acceso_a_datos";
-        String password = "Changeme_23";
-
-        int minIdle = 3;
-        int maxIdle = 6;
-        int maxTotal = 10;
-
-        // BasicDataSource
-        dataSource.setUrl(url + "?allowMultiQueries=true&useSSL=false&zeroDateTimeBehavior=convertToNull");
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
-
-        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-        dataSource.setInitialSize(minIdle);
-        dataSource.setMinIdle(minIdle);
-        dataSource.setMaxIdle(maxIdle);
-        dataSource.setMaxTotal(maxTotal);
-
-        // PoolingDataSource
-        /*
-        Properties properties = new Properties();
-        properties.setProperty("user", username);
-        properties.setProperty("password", password);
-
-        properties.setProperty("useSSL", "false");
-
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, properties);
-
-        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
-
-        GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
-        config.setMinIdle(minIdle);
-        config.setMaxIdle(maxIdle);
-        config.setMaxTotal(maxTotal);
-                
-        ObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory, config);
-        poolableConnectionFactory.setPool(connectionPool);
-
-        dataSource = new PoolingDataSource<>(connectionPool);
-         */
-    }
-
-    public static Connection getConnection() throws SQLException {
-
-        return dataSource.getConnection();
-
-    }
-
-    public static void closeConnection(Connection conn) {
-
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException sqlEx) {
-            }
+        // A SessionFactory is set up once for an application!
+        final StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+                .configure() // configures settings from hibernate.cfg.xml
+                .build();
+        try {
+            sf = new MetadataSources(registry).buildMetadata().buildSessionFactory();
+        } catch (Exception e) {
+            // The registry would be destroyed by the SessionFactory, but we had trouble building the SessionFactory so destroy it manually.
+            StandardServiceRegistryBuilder.destroy(registry);
         }
-
     }
 
-    public static void closeStatement(Statement stmt) {
+    public static Session openSession() throws Exception {        
+        return sf.openSession();
+    }
 
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException sqlEx) {
-            }
+    public static void closeSession(Session s) {
+        if (s != null) {
+            s.close();
         }
-
     }
 
-    public static void closeResultSet(ResultSet rs) {
-
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException sqlEx) {
-            }
-        }
-
-    }
-
-    public static void rollback(Connection conn) {
-
-        if (conn != null) {
-            try {
-                conn.rollback();
-            } catch (SQLException sqlEx) {
-            }
-        }
-
-    }
-
-    public static Integer getInt(ResultSet rs, String field) throws SQLException {
-
-        Integer value = rs.getInt(field);
-        if (rs.wasNull()) {
-            value = null;
-        }
-        return value;
-
-    }
-    
-    public static Long getLong(ResultSet rs, String field) throws SQLException {
-
-        Long value = rs.getLong(field);
-        if (rs.wasNull()) {
-            value = null;
-        }
-        return value;
-
-    }
 }
