@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" 
+             xmlns="https://jakarta.ee/xml/ns/persistence" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="default">
+        
+        <description>
+            Persistence unit for this project
+        </description>
+
+        <properties>
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+        
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://127.0.0.1:3306/restful" />
+            <property name="jakarta.persistence.jdbc.user" value="acceso_a_datos" />
+            <property name="jakarta.persistence.jdbc.password" value="Changeme_23" />
+
+            <property name="hibernate.show_sql" value="true" />            
+        </properties>
+
+    </persistence-unit>
+
+</persistence>

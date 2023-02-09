@@ -5,6 +5,10 @@
 package es.eldelbit.conectoresdesktop.models;
 
 import com.google.gson.annotations.SerializedName;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
@@ -12,8 +16,11 @@ import java.sql.Timestamp;
  *
  * @author virtualbox
  */
+@Entity
+@Table(name = "clientes")
 public class Cliente {
 
+    @Id
     private Long id;
 
     private String nombre;
@@ -22,12 +29,15 @@ public class Cliente {
 
     private String direccion;
 
+    @Column(name = "fecha_nacimiento")
     @SerializedName("fecha_nacimiento")
     private Timestamp fechaNacimiento;
 
+    @Column(name = "created_at", insertable = false, updatable = false)
     @SerializedName("created_at")
     private Timestamp createdAt;
 
+    @Column(name = "updated_at", insertable = false, updatable = false)
     @SerializedName("updated_at")
     private Timestamp updatedAt;
 
