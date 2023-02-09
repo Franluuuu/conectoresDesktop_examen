@@ -4,6 +4,18 @@
  */
 package es.eldelbit.conectoresdesktop;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import es.eldelbit.conectoresdesktop.db.DB;
+import es.eldelbit.conectoresdesktop.models.Cliente;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author virtualbox
@@ -26,21 +38,118 @@ public class MainJFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jBListar = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTA = new javax.swing.JTextArea();
+        jClear = new javax.swing.JButton();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jBListar.setText("LISTAR");
+        jBListar.setName(""); // NOI18N
+        jBListar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBListarActionPerformed(evt);
+            }
+        });
+
+        jTA.setEditable(false);
+        jTA.setColumns(20);
+        jTA.setRows(5);
+        jScrollPane2.setViewportView(jTA);
+
+        jClear.setText("LIMPIAR");
+        jClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jClearActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(11, 11, 11)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jBListar)
+                    .addComponent(jClear))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 678, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jBListar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jClear))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 567, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jBListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBListarActionPerformed
+
+        var j = ++i;
+        var pre = String.format("%03d", j) + ". LISTAR. ";
+
+        new Thread("" + j) {
+            public void run() {
+                jTA.insert(pre + "Inicio\n", 0);
+
+                Connection conn = null;
+                Statement stmt = null;
+                ResultSet rs = null;
+
+                try {
+
+                    DB.registerDriver();
+                    conn = DB.getConnection();
+                    stmt = conn.createStatement();
+
+                    String sql = "SELECT id, nombre, edad, direccion, fecha_nacimiento, created_at, updated_at FROM clientes";
+                    rs = stmt.executeQuery(sql);
+
+                    while (rs.next()) {
+                        var cliente = new Cliente(
+                                DB.getLong(rs, "id"),
+                                rs.getString("nombre"),
+                                DB.getInt(rs, "edad"),
+                                rs.getString("direccion"),
+                                rs.getTimestamp("fecha_nacimiento"),
+                                rs.getTimestamp("created_at"),
+                                rs.getTimestamp("updated_at")
+                        );
+
+                        Thread.sleep(100);
+                        
+                        jTA.insert(pre + "Cliente: " + getGson().toJson(cliente) + "\n", 0);
+                    }
+
+//                    Thread.sleep(3000);
+                } catch (ClassNotFoundException | SQLException | InterruptedException ex) {
+                    Logger.getLogger(MainJFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    DB.closeResultSet(rs);
+                    DB.closeStatement(stmt);
+                    DB.closeConnection(conn);
+                }
+
+                jTA.insert(pre + "Fin.\n", 0);
+            }
+        }.start();
+
+    }//GEN-LAST:event_jBListarActionPerformed
+
+    private void jClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jClearActionPerformed
+        jTA.setText("");
+    }//GEN-LAST:event_jClearActionPerformed
 
     /**
      * @param args the command line arguments
@@ -77,6 +186,19 @@ public class MainJFrame extends javax.swing.JFrame {
         });
     }
 
+    private Gson getGson() {
+        return new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                // .setPrettyPrinting()
+                .create();
+    }
+
+    private int i = 0;
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jBListar;
+    private javax.swing.JButton jClear;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTA;
     // End of variables declaration//GEN-END:variables
 }
