@@ -15,10 +15,24 @@ import org.hibernate.Session;
 public class ClienteRepository {
 
     public static Cliente find(Session s, Long id) {
+
         return s.find(Cliente.class, id);
+
     }
 
     public static List<Cliente> get(Session s) {
+
         return s.createQuery("SELECT c FROM Cliente c", Cliente.class).getResultList();
+
     }
+
+    public static void insert(Session s, Cliente cliente) {
+
+        // TODO: Intentar quitar esta línea, debería hacerlo Hibernate con anotaciones
+        cliente.setId(null);
+
+        s.persist(cliente); // aquí cliente.id ya tiene valor
+
+    }
+
 }

@@ -4,6 +4,7 @@
  */
 package es.eldelbit.conectoresdesktop.db;
 
+import java.util.TimeZone;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -32,12 +33,18 @@ public class DB {
         }
     }
 
-    public static Session openSession() throws Exception {        
-        return sf.openSession();
+    public static Session openSession() throws Exception {
+        return sf
+                .withOptions()
+                .jdbcTimeZone(TimeZone.getTimeZone("UTC"))
+                .openSession();
     }
 
     public static void closeSession(Session s) {
         if (s != null) {
+            if (s.getTransaction().isActive()) {
+                s.getTransaction().rollback();
+            }
             s.close();
         }
     }

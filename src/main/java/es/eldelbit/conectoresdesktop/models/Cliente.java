@@ -7,19 +7,24 @@ package es.eldelbit.conectoresdesktop.models;
 import com.google.gson.annotations.SerializedName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 /**
  *
  * @author virtualbox
  */
 @Entity
-@Table( name = "clientes" )
+@Table(name = "clientes")
 public class Cliente {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)    
     private Long id;
 
     private String nombre;
@@ -32,11 +37,13 @@ public class Cliente {
     @SerializedName("fecha_nacimiento")
     private Timestamp fechaNacimiento;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at"/*, insertable = false, updatable = false*/)
+    @CreationTimestamp
     @SerializedName("created_at")
     private Timestamp createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false)
+    @Column(name = "updated_at"/*, insertable = false, updatable = false*/)
+    @UpdateTimestamp
     @SerializedName("updated_at")
     private Timestamp updatedAt;
 
