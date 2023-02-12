@@ -23,16 +23,20 @@ public class DB {
     }
 
     public static EntityManager createEntityManager() {
-        
+
         return emf.createEntityManager();
-        
+
     }
 
     public static void closeEntityManager(EntityManager em) {
 
         if (em != null) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
             em.close();
         }
 
     }
+
 }

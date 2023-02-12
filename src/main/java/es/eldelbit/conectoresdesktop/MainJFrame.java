@@ -8,8 +8,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import es.eldelbit.conectoresdesktop.db.DB;
 import es.eldelbit.conectoresdesktop.models.Cliente;
-import es.eldelbit.conectoresdesktop.respositories.ClienteRepository;
+import es.eldelbit.conectoresdesktop.repositories.ClienteRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.ParameterMode;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.CallableStatement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import org.hibernate.Session;
 
 /**
  *
@@ -24,6 +31,84 @@ public class MainJFrame extends javax.swing.JFrame {
         initComponents();
     }
 
+    private int i = 0;
+
+    /**
+     * Añade una línea de log en el TextArea
+     */
+    private void log(String text) {
+        jTALog.insert(text + "\n", 0);
+        //jTA.append(text + "\n");
+    }
+
+    /**
+     * Gson para conversión a Json
+     */
+    private Gson getGson() {
+        return new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
+                .setPrettyPrinting()
+                .create();
+    }
+
+    /**
+     * Pausa la ejecución
+     */
+    private void pause(long millis) {
+        if (millis > 0) {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException ex) {
+                log(ex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Convierte el texto de jTFValor a entero
+     */
+    private long getId(String action) {
+        long value;
+        try {
+            value = Long.parseLong(jTFValor.getText());
+        } catch (Exception ex) {
+            log(action + ". ERROR: " + ex.getMessage());
+            jTFValor.setText("1");
+            value = 1;
+        }
+        return value;
+    }
+
+    /**
+     * Convierte el texto de jTFRepeticiones a entero
+     */
+    private int getRep(String action) {
+        int value;
+        try {
+            value = Integer.parseInt(jTFRepeticiones.getText());
+        } catch (Exception ex) {
+            log(action + ". ERROR: " + ex.getMessage());
+            jTFRepeticiones.setText("1");
+            value = 1;
+        }
+        return value;
+    }
+
+    /**
+     * Convierte el texto de jTFSleep a entero
+     */
+    private int getSleep(String action) {
+        int value;
+        try {
+            value = Integer.parseInt(jTFSleep.getText());
+        } catch (Exception ex) {
+            log(action + ". ERROR: " + ex.getMessage());
+            jTFSleep.setText("0");
+            value = 0;
+        }
+        return value;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -33,37 +118,55 @@ public class MainJFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jLValor = new javax.swing.JLabel();
+        jTFValor = new javax.swing.JTextField();
+        jBScript = new javax.swing.JButton();
+        jBCrear = new javax.swing.JButton();
         jBListar = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTA = new javax.swing.JTextArea();
-        jClear = new javax.swing.JButton();
         jBMostrar = new javax.swing.JButton();
-        jTF = new javax.swing.JTextField();
-        jTFSleep = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        jBBorrar = new javax.swing.JButton();
+        jBModificar = new javax.swing.JButton();
+        jBProcedimiento = new javax.swing.JButton();
+        jBFuncion = new javax.swing.JButton();
+        jBRecorrer = new javax.swing.JButton();
+        jLRepeticiones = new javax.swing.JLabel();
         jTFRepeticiones = new javax.swing.JTextField();
+        jLSleep = new javax.swing.JLabel();
+        jTFSleep = new javax.swing.JTextField();
+        jBClear = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTALog = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("HIBERNATE");
+
+        jLValor.setText("Valor");
+
+        jTFValor.setText("1");
+
+        jBScript.setText("SCRIPT");
+        jBScript.setName(""); // NOI18N
+        jBScript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBScriptActionPerformed(evt);
+            }
+        });
+
+        jBCrear.setText("CREAR");
+        jBCrear.setName(""); // NOI18N
+        jBCrear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBCrearActionPerformed(evt);
+            }
+        });
 
         jBListar.setText("LISTAR");
         jBListar.setName(""); // NOI18N
         jBListar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBListarActionPerformed(evt);
-            }
-        });
-
-        jTA.setEditable(false);
-        jTA.setColumns(20);
-        jTA.setRows(5);
-        jScrollPane2.setViewportView(jTA);
-
-        jClear.setText("LIMPIAR");
-        jClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jClearActionPerformed(evt);
             }
         });
 
@@ -75,67 +178,170 @@ public class MainJFrame extends javax.swing.JFrame {
             }
         });
 
-        jTF.setText("1");
+        jBBorrar.setText("BORRAR");
+        jBBorrar.setName(""); // NOI18N
+        jBBorrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBBorrarActionPerformed(evt);
+            }
+        });
 
-        jTFSleep.setText("100");
+        jBModificar.setText("MODIFICAR");
+        jBModificar.setName(""); // NOI18N
+        jBModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBModificarActionPerformed(evt);
+            }
+        });
 
-        jLabel1.setText("Sleep (ms)");
+        jBProcedimiento.setText("PROCEDIMIENTO");
+        jBProcedimiento.setName(""); // NOI18N
+        jBProcedimiento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBProcedimientoActionPerformed(evt);
+            }
+        });
 
-        jLabel2.setText("ID");
+        jBFuncion.setText("FUNCIÓN *");
+        jBFuncion.setName(""); // NOI18N
+        jBFuncion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBFuncionActionPerformed(evt);
+            }
+        });
 
-        jLabel3.setText("Repeticiones");
+        jBRecorrer.setText("RECORRER");
+        jBRecorrer.setName(""); // NOI18N
+        jBRecorrer.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBRecorrerActionPerformed(evt);
+            }
+        });
+
+        jLRepeticiones.setText("Repeticiones");
 
         jTFRepeticiones.setText("1");
+
+        jLSleep.setText("Sleep (ms)");
+
+        jTFSleep.setText("0");
+
+        jBClear.setText("LIMPIAR");
+        jBClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBClearActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jBMostrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBListar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTFValor, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jBRecorrer, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+                    .addComponent(jBFuncion, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBProcedimiento, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jBModificar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBBorrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBCrear, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBScript, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBClear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTFSleep, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jTFRepeticiones, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLValor)
+                            .addComponent(jLSleep)
+                            .addComponent(jLRepeticiones))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLValor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTFValor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
+                .addComponent(jBScript)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBCrear)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBListar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBMostrar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBBorrar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBModificar)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBProcedimiento)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBFuncion)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBRecorrer)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 101, Short.MAX_VALUE)
+                .addComponent(jLRepeticiones)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTFRepeticiones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLSleep)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTFSleep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jBClear)
+                .addContainerGap())
+        );
+
+        jScrollPane1.setBackground(new java.awt.Color(242, 242, 242));
+
+        jTALog.setEditable(false);
+        jTALog.setColumns(20);
+        jTALog.setRows(5);
+        jScrollPane1.setViewportView(jTALog);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jScrollPane1)
+                .addGap(0, 0, 0))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(11, 11, 11)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jBMostrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBListar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jClear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTF, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jTFSleep, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jTFRepeticiones, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 678, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(8, 8, 8)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(8, 8, 8))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(23, 23, 23)
-                        .addComponent(jBListar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jBMostrar)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTFRepeticiones, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTFSleep, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jClear))
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 567, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(15, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(8, 8, 8))
         );
 
         pack();
@@ -143,31 +349,19 @@ public class MainJFrame extends javax.swing.JFrame {
 
     private void jBListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBListarActionPerformed
 
-        int rep;
-        try {
-            rep = Integer.parseInt(jTFRepeticiones.getText());
-        } catch (Exception ex) {
-            jTA.insert("LISTAR. ERROR: " + ex.getMessage() + "\n", 0);
-            return;
-        }
+        var action = "LISTAR";
+        var rep = getRep(action);
+        var sleep = getSleep(action);
 
         for (int x = 0; x < rep; x++) {
 
-            int j, s;
-            String pre;
-            try {
-                j = ++i;
-                s = Integer.parseInt(jTFSleep.getText());
-                pre = String.format("%03d. LISTAR. ", j);
-            } catch (Exception ex) {
-                jTA.insert("LISTAR. ERROR: " + ex.getMessage() + "\n", 0);
-                return;
-            }
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
 
-            new Thread("" + j) {
+            new Thread(action + " " + j) {
                 @Override
                 public void run() {
-                    jTA.insert(pre + "Inicio\n", 0);
+                    log(pre + "Inicio.");
 
                     EntityManager em = null;
 
@@ -178,59 +372,44 @@ public class MainJFrame extends javax.swing.JFrame {
                         var clientes = ClienteRepository.get(em);
 
                         for (Cliente cliente : clientes) {
-                            jTA.insert(pre + "Cliente: " + getGson().toJson(cliente) + "\n", 0);
+                            log(pre + "Cliente: " + getGson().toJson(cliente));
 
-                            if (s > 0) {
-                                Thread.sleep(s);
-                            }
+                            pause(sleep);
                         }
 
                     } catch (Exception ex) {
-                        jTA.insert(pre + "ERROR: " + ex.getMessage() + "\n", 0);
+                        log(pre + "ERROR: " + ex.getMessage());
                     } finally {
                         DB.closeEntityManager(em);
                     }
 
-                    jTA.insert(pre + "Fin.\n", 0);
+                    log(pre + "Fin.");
                 }
             }.start();
         }
 
     }//GEN-LAST:event_jBListarActionPerformed
 
-    private void jClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jClearActionPerformed
-        jTA.setText("");
-    }//GEN-LAST:event_jClearActionPerformed
+    private void jBClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBClearActionPerformed
+        jTALog.setText("");
+    }//GEN-LAST:event_jBClearActionPerformed
 
     private void jBMostrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBMostrarActionPerformed
 
-        int rep;
-        try {
-            rep = Integer.parseInt(jTFRepeticiones.getText());
-        } catch (Exception ex) {
-            jTA.insert("ERROR. MOSTRAR: " + ex.getMessage() + "\n", 0);
-            return;
-        }
+        var action = "MOSTRAR";
+        var id = getId(action);
+        var rep = getRep(action);
+        var sleep = getSleep(action);
 
         for (int x = 0; x < rep; x++) {
 
-            int j, s;
-            long id;
-            String pre;
-            try {
-                j = ++i;
-                s = Integer.parseInt(jTFSleep.getText());
-                id = Long.parseLong(jTF.getText());
-                pre = String.format("%03d. MOSTRAR (%d). ", j, id);
-            } catch (Exception ex) {
-                jTA.insert("ERROR. MOSTRAR: " + ex.getMessage() + "\n", 0);
-                return;
-            }
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
 
-            new Thread("" + j) {
+            new Thread(action + " " + j) {
                 @Override
                 public void run() {
-                    jTA.insert(pre + "Inicio\n", 0);
+                    log(pre + "Inicio.");
 
                     EntityManager em = null;
 
@@ -240,24 +419,417 @@ public class MainJFrame extends javax.swing.JFrame {
 
                         var cliente = ClienteRepository.find(em, id);
 
-                        jTA.insert(pre + "Cliente: " + getGson().toJson(cliente) + "\n", 0);
+                        log(pre + "Cliente: " + getGson().toJson(cliente));
 
-                        if (s > 0) {
-                            Thread.sleep(s);
-                        }
+                        pause(sleep);
 
                     } catch (Exception ex) {
-                        jTA.insert(pre + "ERROR: " + ex.getMessage() + "\n", 0);
+                        log(pre + "ERROR: " + ex.getMessage());
                     } finally {
                         DB.closeEntityManager(em);
                     }
 
-                    jTA.insert(pre + "Fin.\n", 0);
+                    log(pre + "Fin.");
                 }
             }.start();
         }
 
     }//GEN-LAST:event_jBMostrarActionPerformed
+
+    private void jBCrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBCrearActionPerformed
+
+        var action = "CREAR";
+        var rep = getRep(action);
+        var sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        var cliente = new Cliente(
+                                1L, // sería null, puesto para probar
+                                "Nombre " + j,
+                                i,
+                                "Dirección " + j,
+                                Timestamp.valueOf("2023-01-01 " + (j % 24) + ":00:00.0"),
+                                Timestamp.valueOf("2023-01-01 01:00:00.0"), // sería null, puesto para probar
+                                Timestamp.valueOf("2023-01-01 02:00:00.0") // sería null, puesto para probar
+                        );
+
+                        em = DB.createEntityManager();
+
+                        em.getTransaction().begin();
+
+                        ClienteRepository.insert(em, cliente);
+
+                        // log(pre + "Cliente (antes del commit); " + getGson().toJson(cliente));
+                        em.getTransaction().commit();
+                        // log(pre + "Cliente: (después del commit): " + getGson().toJson(cliente));
+
+                        // las fechas created_at y updated_at las mete la base de datos
+                        em.refresh(cliente);
+                        log(pre + "Cliente: (después del refresh): " + getGson().toJson(cliente));
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBCrearActionPerformed
+
+    private void jBBorrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBBorrarActionPerformed
+
+        var action = "BORRAR";
+        var id = getId(action);
+        int rep = getRep(action);
+        int sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        em = DB.createEntityManager();
+
+                        var cliente = ClienteRepository.find(em, id);
+
+                        if (cliente != null) {
+                            em.getTransaction().begin();
+
+                            em.remove(cliente);
+
+                            em.getTransaction().commit();
+
+                            log(pre + "Cliente: " + getGson().toJson(cliente));
+                        } else {
+                            log(pre + "Cliente no encontrado: " + id);
+                        }
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBBorrarActionPerformed
+
+    private void jBModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBModificarActionPerformed
+
+        var action = "MODIFICAR";
+        var id = getId(action);
+        int rep = getRep(action);
+        int sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        em = DB.createEntityManager();
+
+                        var cliente = ClienteRepository.find(em, id);
+
+                        if (cliente != null) {
+
+                            // log(pre + "Cliente (después del find): " + getGson().toJson(cliente));
+                            em.getTransaction().begin();
+
+                            cliente.setNombre(cliente.getNombre() + " " + j);
+
+                            // log(pre + "Cliente (antes del commit): " + getGson().toJson(cliente));
+                            em.getTransaction().commit();
+                            // log(pre + "Cliente (después del commit): " + getGson().toJson(cliente));
+
+                            em.refresh(cliente);
+                            log(pre + "Cliente (después del refresh): " + getGson().toJson(cliente));
+                        } else {
+                            log(pre + "Cliente no encontrado: " + id);
+                        }
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBModificarActionPerformed
+
+    private void jBProcedimientoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBProcedimientoActionPerformed
+
+        var action = "PROCEDIMIENTO";
+        int rep = getRep(action);
+        int sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        em = DB.createEntityManager();
+
+                        var q = em.createStoredProcedureQuery("ContarClientesP");
+
+                        q.registerStoredProcedureParameter("search", String.class, ParameterMode.IN);
+                        q.registerStoredProcedureParameter("total", Integer.class, ParameterMode.OUT);
+
+                        q.setParameter("search", jTFValor.getText());
+
+                        q.execute();
+
+                        var total = (Integer) q.getOutputParameterValue("total");
+
+                        log(pre + "Total: " + total);
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBProcedimientoActionPerformed
+
+    private void jBFuncionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBFuncionActionPerformed
+
+        var action = "FUNCIÓN";
+        int rep = getRep(action);
+        int sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        em = DB.createEntityManager();
+
+                        // TODO: Buscar otra forma de llamar a una función 
+                        log(pre + "TODO: Buscar otra forma de llamar a una función");
+
+                        Session s = em.unwrap(Session.class);
+
+                        var total = s.doReturningWork(
+                                connection -> {
+                                    try (CallableStatement function = connection
+                                            .prepareCall("{ ? = CALL ContarClientesF(?) }")) {
+                                                function.registerOutParameter(1, Types.INTEGER);
+                                                function.setString(2, jTFValor.getText());
+                                                function.execute();
+                                                return function.getInt(1);
+                                            }
+                                });
+                        
+                        log(pre + "Total: " + total);
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBFuncionActionPerformed
+
+    private void jBRecorrerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBRecorrerActionPerformed
+
+        var action = "RECORRER";
+        var rep = getRep(action);
+        var sleep = getSleep(action);
+
+        for (int x = 0; x < rep; x++) {
+
+            var j = ++i;
+            var pre = String.format("%03d. %s. ", j, action);
+
+            new Thread(action + " " + j) {
+                @Override
+                public void run() {
+                    log(pre + "Inicio.");
+
+                    EntityManager em = null;
+
+                    try {
+
+                        em = DB.createEntityManager();
+
+                        em.getTransaction().begin();
+
+                        var clientes = ClienteRepository.get(em);
+
+                        for (Cliente cliente : clientes) {
+
+                            var id = cliente.getId();
+
+                            if (id > 4) {
+                                // borrado
+                                em.remove(cliente);
+                                log(pre + "Cliente borrado: " + getGson().toJson(cliente));
+                            } else if (id % 2 == 0) {
+                                // modificación
+                                cliente.setNombre(cliente.getNombre() + " " + j);
+                                log(pre + "Cliente modificado: " + getGson().toJson(cliente));
+
+                            } else {
+                                log(pre + "Cliente: " + getGson().toJson(cliente));
+                            }
+
+                            pause(sleep);
+                        }
+
+                        // insercción
+                        var cliente = new Cliente(
+                                1L, // sería null, puesto para probar
+                                "Nombre " + j,
+                                j,
+                                "Dirección " + j,
+                                Timestamp.valueOf("2023-01-01 " + (j % 24) + ":00:00.0"),
+                                Timestamp.valueOf("2023-01-01 01:00:00.0"), // sería null, puesto para probar
+                                Timestamp.valueOf("2023-01-01 02:00:00.0") // sería null, puesto para probar
+                        );
+                        clientes.add(cliente);
+                        ClienteRepository.insert(em, cliente);
+                        log(pre + "Cliente añadido: " + getGson().toJson(cliente));
+
+                        em.getTransaction().commit();
+
+                        pause(sleep);
+
+                    } catch (Exception ex) {
+                        log(pre + "ERROR: " + ex.getMessage());
+                    } finally {
+                        DB.closeEntityManager(em);
+                    }
+
+                    log(pre + "Fin.");
+                }
+            }.start();
+        }
+
+    }//GEN-LAST:event_jBRecorrerActionPerformed
+
+    private void jBScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBScriptActionPerformed
+
+        // LEEME: Opciones para que no de problemas al crear el script:
+        // - A) Utilizar usuario root en la conexión a la base de datos.
+        // - B) Utilizar usuario limitado en la conexión a la base de datos:
+        //     - "ERROR: You do not have the SUPER privilege and binary logging is enabled (you *might* want to use the less safe log_bin_trust_function_creators variable)"
+        //      Con usuario root: SET GLOBAL log_bin_trust_function_creators = 1;
+        //      Ejecutar
+        //      Con usuario root: SET GLOBAL log_bin_trust_function_creators = 0;   
+        var action = "SCRIPT";
+        var sleep = getSleep(action);
+
+        var j = ++i;
+        var pre = String.format("%03d. %s. ", j, action);
+
+        log(pre + "Inicio.");
+
+        EntityManager em = null;
+
+        try {
+
+            var path = Paths.get(MainJFrame.class.getClassLoader().getResource("esquema.sql").toURI());
+            var sql = new String(Files.readAllBytes(path));
+            // log(sql);
+
+            em = DB.createEntityManager();
+
+            em.getTransaction().begin();
+
+            em.createNativeQuery(sql).executeUpdate();
+
+            em.getTransaction().commit();
+
+            pause(sleep);
+
+        } catch (Exception ex) {
+            log(pre + "ERROR: " + ex.getMessage());
+        } finally {
+            DB.closeEntityManager(em);
+        }
+
+        log(pre + "Fin.");
+
+    }//GEN-LAST:event_jBScriptActionPerformed
 
     /**
      * @param args the command line arguments
@@ -294,26 +866,26 @@ public class MainJFrame extends javax.swing.JFrame {
         });
     }
 
-    private Gson getGson() {
-        return new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'")
-                // .setPrettyPrinting()
-                .create();
-    }
-
-    private int i = 0;
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jBBorrar;
+    private javax.swing.JButton jBClear;
+    private javax.swing.JButton jBCrear;
+    private javax.swing.JButton jBFuncion;
     private javax.swing.JButton jBListar;
+    private javax.swing.JButton jBModificar;
     private javax.swing.JButton jBMostrar;
-    private javax.swing.JButton jClear;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTA;
-    private javax.swing.JTextField jTF;
+    private javax.swing.JButton jBProcedimiento;
+    private javax.swing.JButton jBRecorrer;
+    private javax.swing.JButton jBScript;
+    private javax.swing.JLabel jLRepeticiones;
+    private javax.swing.JLabel jLSleep;
+    private javax.swing.JLabel jLValor;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTALog;
     private javax.swing.JTextField jTFRepeticiones;
     private javax.swing.JTextField jTFSleep;
+    private javax.swing.JTextField jTFValor;
     // End of variables declaration//GEN-END:variables
 }
