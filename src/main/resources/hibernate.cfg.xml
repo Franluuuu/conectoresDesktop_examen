@@ -13,9 +13,13 @@
         <property name="connection.username">acceso_a_datos</property>
         <property name="connection.password">Changeme_23</property>
 
-        <!-- JDBC connection pool (use the built-in) -->
-        <property name="connection.pool_size">1</property>
-
+        <!-- HikariCP -->
+        <property name="hibernate.connection.provider_class">org.hibernate.hikaricp.internal.HikariCPConnectionProvider</property>        
+        <property name="hibernate.hikari.minimumIdle">3</property>
+        <property name="hibernate.hikari.maximumPoolSize">10</property>
+        <property name="hibernate.hikari.idleTimeout">60000</property>       
+        <property name="hibernate.hikari.connectionTimeout">10000</property>
+        
         <!-- SQL dialect -->
         <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
 
