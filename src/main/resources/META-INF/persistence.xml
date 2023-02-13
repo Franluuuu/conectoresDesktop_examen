@@ -17,6 +17,15 @@
             <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://127.0.0.1:3306/restful?allowMultiQueries=true" />
             <property name="jakarta.persistence.jdbc.user" value="acceso_a_datos" />
             <property name="jakarta.persistence.jdbc.password" value="Changeme_23" />
+            
+            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider" />
+             
+            <property name="hibernate.hikari.minimumIdle" value="3" />
+            <property name="hibernate.hikari.maximumPoolSize" value="10" />
+            <property name="hibernate.hikari.idleTimeout" value="60000" />
+            <property name="hibernate.hikari.connectionTimeout" value="10000" />
+                    
+            <property name="dialect" value="org.hibernate.dialect.MySQLDialect" />
 
             <property name="hibernate.show_sql" value="true" />            
         </properties>
